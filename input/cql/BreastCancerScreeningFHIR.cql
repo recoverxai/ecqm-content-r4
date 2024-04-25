@@ -49,9 +49,12 @@ define "SDE Race":
 define "SDE Sex":
   SDE."SDE Sex"
 
+define "Patient Age":
+  AgeInYearsAt(start of "Measurement Period")
+
 define "Initial Population":
   Patient.gender = 'female'
-  			and AgeInYearsAt(start of "Measurement Period") between 51 and 74
+  			and "Patient Age" between 51 and 74
   			and exists AdultOutpatientEncounters."Qualifying Encounters"
 
 define "Denominator":
@@ -103,12 +106,13 @@ define "Bilateral Mastectomy Procedure":
   				where Global."Normalize Interval"(BilateralMastectomyPerformed.performed) ends on or before end of "Measurement Period"
   						and BilateralMastectomyPerformed.status = 'completed'
 
+define "Mammography Report":
+  [DiagnosticReport: "Mammography"] Mammogram
+  				where ( Global."Normalize Interval"(Mammogram.effective) ends 27 months or less on or before end of "Measurement Period" )
+              and Mammogram.status in { 'final', 'amended', 'corrected', 'appended' }
+
 define "Numerator":
-  exists (
-  				[DiagnosticReport: "Mammography"] Mammogram
-  						where ( Global."Normalize Interval"(Mammogram.effective) ends 27 months or less on or before end of "Measurement Period" )
-  								and Mammogram.status in { 'final', 'amended', 'corrected', 'appended' }
-  		)
+  exists "Mammography Report"
 
 define "Denominator Exclusion":
   Hospice."Has Hospice"
